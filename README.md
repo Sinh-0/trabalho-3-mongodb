@@ -1,6 +1,3 @@
-## 📊 Diagrama de Classes (Modelo de Dados)
-
-```mermaid
 classDiagram
     class Setor {
         +_id: ObjectId
@@ -22,7 +19,7 @@ classDiagram
         +salario: float
         +data_nascimento: date
         +endereco: Endereco
-        +setor: Link[Setor]
+        +setor: Link~Setor~
     }
 
     class Escala {
@@ -31,12 +28,12 @@ classDiagram
         +inicio: datetime
         +fim: datetime
         +ativa: bool
-        +setor: Link[Setor]
-        +equipe: List[Link[Funcionario]]
+        +setor: Link~Setor~
+        +equipe: List~Link~Funcionario~~
     }
 
-    %% Relacionamentos
-    Funcionario *-- Endereco : Contém (Embutido)
-    Funcionario --> Setor : Pertence a (1:N)
-    Escala --> Setor : Pertence a (1:N)
-    Escala "1" --> "N" Funcionario : Equipe (M:N)
+    %% Relacionamentos com aspas para evitar erro
+    Funcionario *-- Endereco : "Contém (Embutido)"
+    Funcionario --> Setor : "Pertence a (1:N)"
+    Escala --> Setor : "Pertence a (1:N)"
+    Escala "1" --> "N" Funcionario : "Equipe (M:N)"
