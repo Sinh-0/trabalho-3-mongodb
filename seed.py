@@ -1,85 +1,86 @@
 import asyncio
+import random
 from app.database import init_db
 from app.models.setor import Setor
 from app.models.funcionario import Funcionario, Endereco
 from app.models.escala import Escala
 
 async def main():
-    # 1. Inicia o Banco
     await init_db()
     print("🔌 Banco conectado.")
 
-    # 2. Limpa o Banco (Deleta tudo para não duplicar)
     print("🧹 Limpando dados antigos...")
     await Escala.delete_all()
     await Funcionario.delete_all()
     await Setor.delete_all()
 
-    # 3. Cria Setores
+    # 1. Cria Setores
     print("🏢 Criando Setores...")
-    ti = await Setor(nome="Tecnologia", responsavel="Weslem").create()
-    rh = await Setor(nome="Recursos Humanos", responsavel="Maria").create()
-
-    # 4. Cria Funcionários
-    print("👷 Criando Funcionários...")
+    nomes_setores = ["Tecnologia", "Recursos Humanos", "Financeiro", "Operações", "Marketing"]
+    setores_objs = []
     
-    end1 = Endereco(rua="Rua A, 10", cidade="Quixadá", estado="CE")
-    func1 = await Funcionario(
-        nome="João Dev", 
-        cpf="111.111.111-11", 
-        email="joao@ti.com", 
-        data_nascimento="1990-01-01", 
-        salario=5000.0, 
-        endereco=end1,
-        setor=ti # Link direto com o objeto
-    ).create()
+    for nome in nomes_setores:
+        setor = await Setor(nome=nome, responsavel=f"Gerente {nome[:3]}").create()
+        setores_objs.append(setor)
 
-    end2 = Endereco(rua="Rua B, 20", cidade="Fortaleza", estado="CE")
-    func2 = await Funcionario(
-        nome="Ana Front", 
-        cpf="222.222.222-22", 
-        email="ana@ti.com", 
-        data_nascimento="1995-05-05", 
-        salario=6000.0, 
-        endereco=end2,
-        setor=ti
-    ).create()
-
-    end3 = Endereco(rua="Rua C, 30", cidade="Sobral", estado="CE")
-    func3 = await Funcionario(
-        nome="Carlos RH", 
-        cpf="333.333.333-33", 
-        email="carlos@rh.com", 
-        data_nascimento="1985-10-10", 
-        salario=4000.0, 
-        endereco=end3,
-        setor=rh
-    ).create()
-
-    # 5. Cria Escalas
-    print("📅 Criando Escalas...")
+    # 2. Cria 20 Funcionários com Nomes Reais
+    print("👷 Criando 20 Funcionários...")
     
-    # Escala TI (João e Ana)
-    await Escala(
-        nome="Plantão Deploy",
-        inicio="2026-02-01T22:00:00",
-        fim="2026-02-02T06:00:00",
-        ativa=True,
-        setor=ti,
-        equipe=[func1, func2] # Lista de objetos linkados
-    ).create()
+    nomes_primeiros = ["Lucas", "Ana", "Marcos", "Beatriz", "João", "Mariana", "Pedro", "Julia", "Gabriel", "Larissa", "Rafael", "Camila"]
+    sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Almeida", "Costa", "Pereira", "Lima"]
+    cargos = ["Desenvolvedor", "Analista", "Gerente", "Assistente", "Estagiário", "Coordenador"]
+    
+    funcionarios_objs = []
+    
+    for i in range(20):
+        nome_completo = f"{random.choice(nomes_primeiros)} {random.choice(sobrenomes)}"
+        setor_escolhido = random.choice(setores_objs)
+        salario_base = random.randint(2500, 12000)
+        
+        # Gera data aleatória entre 1980 e 2000
+        ano_nasc = random.randint(1980, 2003)
+        mes_nasc = random.randint(1, 12)
+        dia_nasc = random.randint(1, 28)
+        
+        func = await Funcionario(
+            nome=nome_completo,
+            cpf=f"{random.randint(100,999)}.{random.randint(100,999)}.{random.randint(100,999)}-{random.randint(10,99)}",
+            email=f"{nome_completo.lower().replace(' ', '.')}@empresa.com",
+            data_nascimento=f"{ano_nasc}-{mes_nasc:02d}-{dia_nasc:02d}",
+            salario=float(salario_base),
+            endereco=Endereco(
+                rua=f"Rua {random.choice(['das Flores', 'do Sol', 'da Paz', 'Principal'])}, {random.randint(1, 500)}", 
+                cidade=random.choice(["Quixadá", "Fortaleza", "Sobral", "Juazeiro"]), 
+                estado="CE"
+            ),
+            setor=setor_escolhido
+        ).create()
+        funcionarios_objs.append(func)
 
-    # Escala RH (Só Carlos)
-    await Escala(
-        nome="Plantão Recrutamento",
-        inicio="2026-02-05T08:00:00",
-        fim="2026-02-05T18:00:00",
-        ativa=True,
-        setor=rh,
-        equipe=[func3]
-    ).create()
+    # 3. Cria 10 Escalas
+    print("📅 Criando 10 Escalas...")
+    tipos_escala = ["Plantão Fim de Semana", "Turno Manhã", "Turno Tarde", "Sobreaviso Noturno"]
+    
+    for i in range(10):
+        # Seleciona de 2 a 4 funcionários aleatórios
+        equipe_random = random.sample(funcionarios_objs, k=random.randint(2, 4))
+        
+        # Tenta pegar o setor da maioria ou do primeiro (para ficar coerente)
+        setor_da_escala = equipe_random[0].setor 
+        
+        mes = random.randint(1, 12)
+        dia = random.randint(1, 20)
+        
+        await Escala(
+            nome=f"{random.choice(tipos_escala)} - Grupo {i+1}",
+            inicio=f"2026-{mes:02d}-{dia:02d}T08:00:00",
+            fim=f"2026-{mes:02d}-{dia+5:02d}T18:00:00",
+            ativa=True,
+            setor=setor_da_escala,
+            equipe=equipe_random
+        ).create()
 
-    print("✅ Seed concluído com sucesso! Banco populado.")
+    print("concluído")
 
 if __name__ == "__main__":
     asyncio.run(main())

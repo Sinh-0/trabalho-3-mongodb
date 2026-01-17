@@ -7,6 +7,7 @@ from fastapi_pagination import add_pagination
 from app.routes import setor_routes
 from app.routes import funcionario_routes
 from app.routes import escala_routes
+from app.routes import dashboard_routes
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -23,6 +24,8 @@ add_pagination(app)
 app.include_router(setor_routes.router)
 app.include_router(funcionario_routes.router)
 app.include_router(escala_routes.router)
+app.include_router(dashboard_routes.router)
+
 
 
 @app.get("/")
