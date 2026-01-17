@@ -37,14 +37,20 @@ async def criar_funcionario(funcionario: Funcionario):
 async def listar_funcionarios(
     nome: str | None = Query(None, description="Filtrar por nome (busca parcial)"),
     cpf: str | None = Query(None, description="Filtrar por CPF exato"),
+    setor_id: str | None = Query(None, description="Filtrar por ID do Setor (Relacionamento)"), # <--- NOVO!
     ordenar_por: str = Query("nome", enum=["nome", "salario"], description="Campo para ordenação"),
     direcao: str = Query("asc", enum=["asc", "desc"], description="Direção da ordenação")
 ):
     query_busca = Funcionario.find_all()
 
     # Filtros
+    if setor_id:
+        # Busca funcionários onde o LINK do setor tem esse ID
+        query_busca = Funcionario.find(Funcionario.setor.ref.id == PydanticObjectId(setor_id))
+
+    # c) Busca por texto parcial
     if nome:
-        query_busca = Funcionario.find(RegEx(Funcionario.nome, nome, "i"))
+        query_busca = query_busca.find(RegEx(Funcionario.nome, nome, "i"))
     
     if cpf:
         query_busca = query_busca.find(Funcionario.cpf == cpf)
@@ -55,7 +61,7 @@ async def listar_funcionarios(
     else:
         query_busca = query_busca.sort(f"-{ordenar_por}")
 
-    # Transformer para carregar Setor
+    # Transformer
     async def carregar_links(itens: list[Funcionario]):
         for func in itens:
             if func.setor and func.setor.ref.id:
