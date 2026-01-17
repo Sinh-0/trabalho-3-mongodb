@@ -3,16 +3,27 @@ from fastapi_pagination import Page
 from fastapi_pagination.ext.beanie import paginate
 from beanie import PydanticObjectId
 from beanie.operators import RegEx
+from pydantic import BaseModel
 
+# Importamos os modelos
 from app.models.funcionario import Funcionario
 from app.models.setor import Setor
 
 router = APIRouter(prefix="/funcionarios", tags=["Funcionários"])
 
+# --- MODELO AUXILIAR PARA O PATCH (Sintaxe Moderna) ---
+class FuncionarioUpdate(BaseModel):
+    # Em vez de Optional[str], usamos str | None
+    nome: str | None = None
+    cpf: str | None = None
+    email: str | None = None
+    salario: float | None = None
+    data_nascimento: str | None = None
+
 # 1. CREATE
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Funcionario)
 async def criar_funcionario(funcionario: Funcionario):
-    # Regra de negócio: Verificar se o setor existe antes de criar
+    # Regra: Verificar se o setor existe
     if funcionario.setor and funcionario.setor.ref.id:
         setor_existe = await Setor.get(funcionario.setor.ref.id)
         if not setor_existe:
@@ -21,7 +32,7 @@ async def criar_funcionario(funcionario: Funcionario):
     novo_func = await funcionario.create()
     return novo_func
 
-# 2. READ ALL (COM FILTROS: Texto, Relacionamento e Ordenação)
+# 2. READ ALL (Com filtros de Texto e Ordenação)
 @router.get("/", response_model=Page[Funcionario])
 async def listar_funcionarios(
     nome: str | None = Query(None, description="Filtrar por nome (busca parcial)"),
@@ -29,24 +40,22 @@ async def listar_funcionarios(
     ordenar_por: str = Query("nome", enum=["nome", "salario"], description="Campo para ordenação"),
     direcao: str = Query("asc", enum=["asc", "desc"], description="Direção da ordenação")
 ):
-    # Inicia a query base
     query_busca = Funcionario.find_all()
 
-    # c) Busca por texto parcial e case-insensitive
+    # Filtros
     if nome:
         query_busca = Funcionario.find(RegEx(Funcionario.nome, nome, "i"))
     
-    # Busca exata
     if cpf:
         query_busca = query_busca.find(Funcionario.cpf == cpf)
 
-    # f) Classificações e ordenações
+    # Ordenação
     if direcao == "asc":
         query_busca = query_busca.sort(ordenar_por)
     else:
         query_busca = query_busca.sort(f"-{ordenar_por}")
 
-    # Transformer manual (para carregar o Setor)
+    # Transformer para carregar Setor
     async def carregar_links(itens: list[Funcionario]):
         for func in itens:
             if func.setor and func.setor.ref.id:
@@ -67,9 +76,32 @@ async def obter_funcionario(id: PydanticObjectId):
 
     return funcionario
 
-# 4. UPDATE
+# 4. PATCH (ATUALIZAÇÃO PARCIAL)
+@router.patch("/{id}", response_model=Funcionario)
+async def atualizar_parcial(id: PydanticObjectId, dados: FuncionarioUpdate):
+    # Pega apenas os campos que não são None
+    req = {k: v for k, v in dados.dict().items() if v is not None}
+    
+    if not req:
+        raise HTTPException(status_code=400, detail="Nenhum dado enviado para atualização")
+
+    update_query = {"$set": req}
+    
+    funcionario = await Funcionario.get(id)
+    if not funcionario:
+        raise HTTPException(status_code=404, detail="Funcionário não encontrado")
+    
+    await funcionario.update(update_query)
+    
+    # Recarrega o Setor
+    if funcionario.setor and funcionario.setor.ref.id:
+         funcionario.setor = await Setor.get(funcionario.setor.ref.id)
+         
+    return funcionario
+
+# 5. PUT (ATUALIZAÇÃO TOTAL)
 @router.put("/{id}", response_model=Funcionario)
-async def atualizar_funcionario(id: PydanticObjectId, dados_atualizados: Funcionario):
+async def atualizar_total(id: PydanticObjectId, dados_atualizados: Funcionario):
     func_banco = await Funcionario.get(id)
     if not func_banco:
         raise HTTPException(status_code=404, detail="Funcionário não encontrado")
@@ -82,7 +114,7 @@ async def atualizar_funcionario(id: PydanticObjectId, dados_atualizados: Funcion
         
     return dados_atualizados
 
-# 5. DELETE
+# 6. DELETE
 @router.delete("/{id}", status_code=204)
 async def deletar_funcionario(id: PydanticObjectId):
     func = await Funcionario.get(id)
