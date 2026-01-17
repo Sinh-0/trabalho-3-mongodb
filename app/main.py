@@ -30,4 +30,4 @@ app.include_router(dashboard_routes.router)
 
 @app.get("/")
 def health_check():
-    return {"status": "ok", "banco": "conectado"}
+    return {"Tudo ok!"}

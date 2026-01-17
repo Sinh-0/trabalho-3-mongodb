@@ -11,16 +11,26 @@ async def obter_estatisticas_gerais():
     e) Agregações e contagens utilizando aggregation pipeline
     g) Consultas complexas
     """
-    # Contagens simples
+    # 1. Contagens simples
     total_func = await Funcionario.count()
     total_escalas = await Escala.count()
     total_setores = await Setor.count()
 
-    # Agregação: Média Salarial
+    # 2. Agregação: Média Salarial
     pipeline_media = [
         {"$group": {"_id": None, "media_salarial": {"$avg": "$salario"}}}
     ]
-    resultado_media = await Funcionario.aggregate(pipeline_media).to_list()
+    
+    # --- A CORREÇÃO ESTÁ AQUI EMBAIXO ---
+    # Usamos .get_pymongo_collection() em vez de .get_motor_collection()
+    motor_collection = Funcionario.get_pymongo_collection()
+    
+    # O aggregate do Motor retorna um cursor (sem await)
+    cursor = motor_collection.aggregate(pipeline_media)
+    
+    # O to_list é que precisa ser aguardado
+    resultado_media = await cursor.to_list(length=None)
+    
     media = resultado_media[0]["media_salarial"] if resultado_media else 0
 
     return {
