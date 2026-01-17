@@ -1,4 +1,6 @@
 from fastapi import APIRouter, HTTPException, status
+from fastapi_pagination import Page
+from fastapi_pagination.ext.beanie import paginate
 from typing import List
 from beanie import PydanticObjectId
 
@@ -16,11 +18,9 @@ async def criar_setor(setor: Setor):
     novo_setor = await setor.create()
     return novo_setor
 
-@router.get("/", response_model=list[Setor])
+@router.get("/", response_model=Page[Setor])
 async def listar_setores():
-    # .find_all().to_list() busca tudo
-    setores = await Setor.find_all().to_list()
-    return setores
+    return await paginate(Setor.find_all())
 
 @router.get("/{id}", response_model=Setor)
 async def obter_setor(id: PydanticObjectId):

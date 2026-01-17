@@ -3,6 +3,7 @@ from beanie import init_beanie
 
 from app.config import settings
 from app.models.setor import Setor 
+from app.models.funcionario import Funcionario
 
 async def init_db():
     client = AsyncIOMotorClient(settings.MONGODB_URL)
@@ -11,7 +12,8 @@ async def init_db():
     await init_beanie(
         database=database, 
         document_models=[
-            Setor
+            Setor,
+            Funcionario
         ]
     )
     
