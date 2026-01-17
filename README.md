@@ -1,3 +1,7 @@
+# Trabalho 3 - Persistência com MongoDB
+
+## Diagrama de Classes
+```mermaid
 classDiagram
     class Setor {
         +_id: ObjectId
@@ -32,8 +36,9 @@ classDiagram
         +equipe: List~Link~Funcionario~~
     }
 
-    %% Relacionamentos com aspas para evitar erro
+    %% Relacionamentos
     Funcionario *-- Endereco : "Contém (Embutido)"
     Funcionario --> Setor : "Pertence a (1:N)"
     Escala --> Setor : "Pertence a (1:N)"
     Escala "1" --> "N" Funcionario : "Equipe (M:N)"
+```
