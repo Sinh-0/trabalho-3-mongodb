@@ -14,21 +14,19 @@ async def main():
     await Funcionario.delete_all()
     await Setor.delete_all()
 
-    # 1. Cria Setores
-    print("🏢 Criando Setores...")
-    nomes_setores = ["Tecnologia", "Recursos Humanos", "Financeiro", "Operações", "Marketing"]
+    # 1. Cria 10 Setores
+    print("🏢 Criando 10 Setores...")
+    nomes_setores = ["Tecnologia", "RH", "Financeiro", "Operações", "Marketing", "Vendas", "Jurídico", "Logística", "Segurança", "Suporte"]
     setores_objs = []
     
     for nome in nomes_setores:
         setor = await Setor(nome=nome, responsavel=f"Gerente {nome[:3]}").create()
         setores_objs.append(setor)
 
-    # 2. Cria 20 Funcionários com Nomes Reais
+    # 2. Cria 20 Funcionários
     print("👷 Criando 20 Funcionários...")
-    
     nomes_primeiros = ["Lucas", "Ana", "Marcos", "Beatriz", "João", "Mariana", "Pedro", "Julia", "Gabriel", "Larissa", "Rafael", "Camila"]
     sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Almeida", "Costa", "Pereira", "Lima"]
-    cargos = ["Desenvolvedor", "Analista", "Gerente", "Assistente", "Estagiário", "Coordenador"]
     
     funcionarios_objs = []
     
@@ -37,7 +35,6 @@ async def main():
         setor_escolhido = random.choice(setores_objs)
         salario_base = random.randint(2500, 12000)
         
-        # Gera data aleatória entre 1980 e 2000
         ano_nasc = random.randint(1980, 2003)
         mes_nasc = random.randint(1, 12)
         dia_nasc = random.randint(1, 28)
@@ -62,25 +59,23 @@ async def main():
     tipos_escala = ["Plantão Fim de Semana", "Turno Manhã", "Turno Tarde", "Sobreaviso Noturno"]
     
     for i in range(10):
-        # Seleciona de 2 a 4 funcionários aleatórios
         equipe_random = random.sample(funcionarios_objs, k=random.randint(2, 4))
-        
-        # Tenta pegar o setor da maioria ou do primeiro (para ficar coerente)
         setor_da_escala = equipe_random[0].setor 
         
+        ano = random.randint(2000, 2025)
         mes = random.randint(1, 12)
         dia = random.randint(1, 20)
         
         await Escala(
             nome=f"{random.choice(tipos_escala)} - Grupo {i+1}",
-            inicio=f"2026-{mes:02d}-{dia:02d}T08:00:00",
-            fim=f"2026-{mes:02d}-{dia+5:02d}T18:00:00",
+            inicio=f"{ano}-{mes:02d}-{dia:02d}T08:00:00",
+            fim=f"{ano}-{mes:02d}-{dia+5:02d}T18:00:00",
             ativa=True,
             setor=setor_da_escala,
             equipe=equipe_random
         ).create()
 
-    print("concluído")
+    print("✅ Povoamento concluído com sucesso!")
 
 if __name__ == "__main__":
     asyncio.run(main())

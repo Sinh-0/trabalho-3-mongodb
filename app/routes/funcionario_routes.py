@@ -11,9 +11,7 @@ from app.models.setor import Setor
 
 router = APIRouter(prefix="/funcionarios", tags=["Funcionários"])
 
-# --- MODELO AUXILIAR PARA O PATCH (Sintaxe Moderna) ---
 class FuncionarioUpdate(BaseModel):
-    # Em vez de Optional[str], usamos str | None
     nome: str | None = None
     cpf: str | None = None
     email: str | None = None
@@ -82,7 +80,7 @@ async def obter_funcionario(id: PydanticObjectId):
 
     return funcionario
 
-# 4. PATCH (ATUALIZAÇÃO PARCIAL)
+# 4. PATCH 
 @router.patch("/{id}", response_model=Funcionario)
 async def atualizar_parcial(id: PydanticObjectId, dados: FuncionarioUpdate):
     # Pega apenas os campos que não são None
@@ -105,7 +103,7 @@ async def atualizar_parcial(id: PydanticObjectId, dados: FuncionarioUpdate):
          
     return funcionario
 
-# 5. PUT (ATUALIZAÇÃO TOTAL)
+# 5. PUT 
 @router.put("/{id}", response_model=Funcionario)
 async def atualizar_total(id: PydanticObjectId, dados_atualizados: Funcionario):
     func_banco = await Funcionario.get(id)
