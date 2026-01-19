@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from fastapi_pagination import Page
-from fastapi_pagination.ext.beanie import paginate
+from fastapi_pagination.ext.beanie import apaginate
 from beanie import PydanticObjectId
 from beanie.operators import RegEx
 from pydantic import BaseModel
@@ -21,7 +21,7 @@ class FuncionarioUpdate(BaseModel):
 # 1. CREATE
 @router.post("/", status_code=status.HTTP_201_CREATED, response_model=Funcionario)
 async def criar_funcionario(funcionario: Funcionario):
-    # Regra: Verificar se o setor existe
+    # olhar se já existe um criado
     if funcionario.setor and funcionario.setor.ref.id:
         setor_existe = await Setor.get(funcionario.setor.ref.id)
         if not setor_existe:
@@ -30,7 +30,7 @@ async def criar_funcionario(funcionario: Funcionario):
     novo_func = await funcionario.create()
     return novo_func
 
-# 2. READ ALL (Com filtros de Texto e Ordenação)
+# 2. READ ALL 
 @router.get("/", response_model=Page[Funcionario])
 async def listar_funcionarios(
     nome: str | None = Query(None, description="Filtrar por nome (busca parcial)"),
@@ -43,30 +43,26 @@ async def listar_funcionarios(
 
     # Filtros
     if setor_id:
-        # Busca funcionários onde o LINK do setor tem esse ID
-        query_busca = Funcionario.find(Funcionario.setor.ref.id == PydanticObjectId(setor_id))
-
-    # c) Busca por texto parcial
+        # Busca direta pela estrutura do DBRef no MongoDB
+        query_busca = Funcionario.find({"setor.$id": PydanticObjectId(setor_id)})
     if nome:
         query_busca = query_busca.find(RegEx(Funcionario.nome, nome, "i"))
     
     if cpf:
         query_busca = query_busca.find(Funcionario.cpf == cpf)
 
-    # Ordenação
     if direcao == "asc":
         query_busca = query_busca.sort(ordenar_por)
     else:
         query_busca = query_busca.sort(f"-{ordenar_por}")
 
-    # Transformer
     async def carregar_links(itens: list[Funcionario]):
         for func in itens:
             if func.setor and func.setor.ref.id:
                 func.setor = await Setor.get(func.setor.ref.id)
         return itens
 
-    return await paginate(query_busca, transformer=carregar_links)
+    return await apaginate(query_busca, transformer=carregar_links)
 
 # 3. READ ONE
 @router.get("/{id}", response_model=Funcionario)
@@ -83,7 +79,6 @@ async def obter_funcionario(id: PydanticObjectId):
 # 4. PATCH 
 @router.patch("/{id}", response_model=Funcionario)
 async def atualizar_parcial(id: PydanticObjectId, dados: FuncionarioUpdate):
-    # Pega apenas os campos que não são None
     req = {k: v for k, v in dados.dict().items() if v is not None}
     
     if not req:

@@ -7,15 +7,15 @@ from app.models.escala import Escala
 
 async def main():
     await init_db()
-    print("🔌 Banco conectado.")
+    print("Banco conectado.")
 
-    print("🧹 Limpando dados antigos...")
+    print("Limpando dados antigos")
     await Escala.delete_all()
     await Funcionario.delete_all()
     await Setor.delete_all()
 
-    # 1. Cria 10 Setores
-    print("🏢 Criando 10 Setores...")
+    # 1. Cria Setores
+    print("Criando 10 Setores...")
     nomes_setores = ["Tecnologia", "RH", "Financeiro", "Operações", "Marketing", "Vendas", "Jurídico", "Logística", "Segurança", "Suporte"]
     setores_objs = []
     
@@ -23,8 +23,8 @@ async def main():
         setor = await Setor(nome=nome, responsavel=f"Gerente {nome[:3]}").create()
         setores_objs.append(setor)
 
-    # 2. Cria 20 Funcionários
-    print("👷 Criando 20 Funcionários...")
+    # 2. Cria Funcionários
+    print("Criando 20 Funcionários.")
     nomes_primeiros = ["Lucas", "Ana", "Marcos", "Beatriz", "João", "Mariana", "Pedro", "Julia", "Gabriel", "Larissa", "Rafael", "Camila"]
     sobrenomes = ["Silva", "Santos", "Oliveira", "Souza", "Rodrigues", "Ferreira", "Almeida", "Costa", "Pereira", "Lima"]
     
@@ -54,8 +54,8 @@ async def main():
         ).create()
         funcionarios_objs.append(func)
 
-    # 3. Cria 10 Escalas
-    print("📅 Criando 10 Escalas...")
+    # 3. Cria Escalas
+    print("Criando 10 Escalas...")
     tipos_escala = ["Plantão Fim de Semana", "Turno Manhã", "Turno Tarde", "Sobreaviso Noturno"]
     
     for i in range(10):
@@ -75,7 +75,7 @@ async def main():
             equipe=equipe_random
         ).create()
 
-    print("✅ Povoamento concluído com sucesso!")
+    print("Povoamento concluído")
 
 if __name__ == "__main__":
     asyncio.run(main())

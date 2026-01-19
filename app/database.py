@@ -19,5 +19,5 @@ async def init_db():
         ]
     )
     
-    print("✅ Conexão com MongoDB e Beanie iniciada com sucesso!")
+    print("Conexão pronta")
 

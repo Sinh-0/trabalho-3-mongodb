@@ -1,1 +1,62 @@
-Trabalho 3 - MongoDB. Integrantes: Weslem e equipe. Tarefas divididas conforme combinado.
+Divisão de Tarefas:
+
+Membro 1 (Gilmarque Rodrigues Lopes - 566192): Arquitetura e Gestão de Setores.
+Foco: Infraestrutura do projeto, configuração do banco e entidade base.
+
+Infraestrutura & Configuração:
+- Inicializar o projeto com uv e criar o pyproject.toml.
+- Configurar o .gitignore (para evitar o erro do __pycache__ e .env).
+- Criar a estrutura de pastas (app/models, app/routes, etc.).
+- Configurar a conexão com o MongoDB (app/database.py) usando Motor e Beanie.
+- Criar o arquivo config.py para ler variáveis de ambiente (.env).
+
+Modelagem e CRUD - Setor:
+- Criar o Model Setor (Beanie Document).
+- Implementar rotas CRUD para Setor (POST, GET All com paginação, GET ID, PUT, DELETE).
+
+Documentação Geral:
+- Criar o Diagrama de Classes no README.md usando Mermaid.
+- Garantir que o Swagger (OpenAPI) esteja funcionando.
+
+Consultas Específicas (do requisito):
+- Implementar consulta (g): Quantidade total de registros (ex: total de Setores).
+- Implementar consulta (a): Busca por ID otimizada.
+
+------------------------------------------------------------------------------------------------------------------------
+
+Membro 2 (Verônica Maria Alves Agostinho - 565367): Engenharia de Dados e Gestão de Funcionários.
+Foco: Relacionamentos, Dados Embutidos e Agregações.
+
+Modelagem e CRUD - Funcionário:
+- Criar o Model Funcionario (Beanie Document).
+- Desafio: Implementar Endereco como Documento Embutido dentro de Funcionário.
+- Desafio: Criar o relacionamento (Link) de Funcionario pertencendo a um Setor.
+- Implementar rotas CRUD para Funcionario.
+
+Script de Seed (Dados Reais):
+- Criar o script seed.py para popular o banco.
+- Garantir a criação de pelo menos 10 documentos por coleção com dados realistas (nomes reais, datas coerentes).
+- Nota: Não usar create_all, apenas inserção de dados.
+
+Consultas Específicas (do requisito):
+- Implementar consulta (e) e (h): Agregações (Aggregation Pipeline). Ex: Contar quantos funcionários existem por setor.
+- Implementar consulta (j): Filtros numéricos (ex: Salário maior que X ou Avaliação maior que Y).
+
+--------------------------------------------------------------------------------------------------------------------------
+
+Membro 3 (Weslem Walace Da Silva Lira - 571369): Especializar as Buscas e Gestão de Escalas.
+Foco: Consultas Complexas, Filtros de Texto/Data e Entidade Associativa.
+
+Modelagem e CRUD - Escala (ou Plantão):
+- Criar o Model Escala (Beanie Document).
+- Desafio: Relacionamento "Muitos para Muitos" ou lista de referências (ex: Uma escala tem uma lista de Links para Funcionários).
+- Implementar rotas CRUD para Escala.
+
+Filtros Avançados & Tratamento de Erros:
+- Implementar a lógica de busca textual (c) (Case-insensitive com Regex do Mongo) para nomes de funcionários ou setores.
+- Implementar filtros por Data/Ano (d) usando operadores $gte, $lte.
+- Revisar e padronizar o Tratamento de Exceções (HTTPException) em todas as rotas do grupo.
+
+Consultas Específicas (do requisito):
+- Implementar consulta (b): Listar escalas de um funcionário específico (Listagem filtrada por relacionamento).
+- Implementar consulta (f): Listar funcionários nascidos em determinado ano (ou escalas de um ano).

@@ -38,3 +38,4 @@ classDiagram
     Escala --> Setor
     Escala --> Funcionario
 ```
+#Ctrl + Shift + V

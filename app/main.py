@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from app.database import init_db
 from fastapi_pagination import add_pagination
 
-# Importe suas rotas aqui
+# rotas
 from app.routes import setor_routes
 from app.routes import funcionario_routes
 from app.routes import escala_routes
@@ -19,7 +19,7 @@ app = FastAPI(
     lifespan=lifespan
 )
 
-# Registre as rotas aqui
+# registro de rotas
 add_pagination(app)
 app.include_router(setor_routes.router)
 app.include_router(funcionario_routes.router)

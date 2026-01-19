@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException, status, Query
 from fastapi_pagination import Page
-from fastapi_pagination.ext.beanie import paginate
+from fastapi_pagination.ext.beanie import apaginate
 from beanie import PydanticObjectId
 from beanie.operators import In, GTE, LTE
 from datetime import datetime
@@ -16,17 +16,16 @@ router = APIRouter(prefix="/escalas", tags=["Escalas"])
 async def criar_escala(escala: Escala):
     return await escala.create()
 
-# 2. READ ALL (COM FILTRO DE DATA - Item 'd' dos requisitos)
+# 2. READ ALL
 @router.get("/", response_model=Page[Escala])
 async def listar_escalas(
     ano: int | None = Query(None, description="Filtrar escalas de um ano específico"),
-    data_inicio: datetime | None = Query(None, description="Filtrar a partir desta data (ISO 8601)"),
+    data_inicio: datetime | None = Query(None, description="Filtrar a partir desta data"),
 ):
     query_busca = Escala.find_all()
 
-    # d) Filtros por data/ano
+    # Filtros por data/ano
     if ano:
-        # Busca escalas que começam entre 01/01 e 31/12 do ano
         dt_start = datetime(ano, 1, 1)
         dt_end = datetime(ano, 12, 31, 23, 59, 59)
         query_busca = Escala.find(GTE(Escala.inicio, dt_start), LTE(Escala.inicio, dt_end))
@@ -34,7 +33,6 @@ async def listar_escalas(
     if data_inicio:
          query_busca = query_busca.find(GTE(Escala.inicio, data_inicio))
 
-    # Transformer Manual
     async def carregar_dados_escala(itens: list[Escala]):
         for escala in itens:
             if escala.setor and escala.setor.ref.id:
@@ -47,7 +45,7 @@ async def listar_escalas(
                     escala.equipe = funcionarios
         return itens
 
-    return await paginate(query_busca, transformer=carregar_dados_escala)
+    return await apaginate(query_busca, transformer=carregar_dados_escala)
 
 # 3. READ ONE
 @router.get("/{id}", response_model=Escala)
